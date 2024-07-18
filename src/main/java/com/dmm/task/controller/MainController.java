@@ -36,6 +36,7 @@ public class MainController {
             day = day.plusDays(1); // 1日ずつ増やす
         }
 		
+		
 		//カレンダーに年月を表示させるためのフィールド（例:2024年07月）
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy年MM月");
 		//当月の年月を取得
