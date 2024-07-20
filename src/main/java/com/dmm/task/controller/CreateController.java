@@ -34,7 +34,7 @@ public class CreateController {
 	}
 
 	// 投稿を作成
-	@PostMapping("/main/create/{date}")
+	@PostMapping("/main/create")
 	public String register(@RequestParam("title") String title,@AuthenticationPrincipal AccountUserDetails user, @RequestParam("date") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate date, @RequestParam("text") String text, RedirectAttributes redirectAttributes){
 		Tasks task = new Tasks();
 		task.setTitle(title);

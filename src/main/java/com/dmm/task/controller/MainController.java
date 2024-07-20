@@ -14,7 +14,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.dmm.task.data.entity.Tasks;
@@ -29,7 +29,7 @@ public class MainController {
 	private TaskService ts;
 	
 
-	@GetMapping("/main")
+	@RequestMapping("/main")
 	public String main(@RequestParam(value = "date", required = false) String date, Model model, Principal principal) {
 		// 現在の日付を取得
 		LocalDate currentDate = (date != null) ? LocalDate.parse(date) : LocalDate.now();
