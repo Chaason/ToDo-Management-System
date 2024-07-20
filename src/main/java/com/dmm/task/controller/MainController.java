@@ -1,59 +1,72 @@
 package com.dmm.task.controller;
 
-import java.time.DayOfWeek;
+import java.security.Principal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import com.dmm.task.data.entity.Tasks;
+import com.dmm.task.service.CalendarService;
+import com.dmm.task.service.TaskService;
 
 @Controller
 public class MainController {
+	@Autowired
+	private CalendarService cs;
+	@Autowired
+	private TaskService ts;
+	
 
 	@GetMapping("/main")
-	public String main(Model model) {
-		// 1.二次元表となるListのList
-		List<List<LocalDate>> month = new ArrayList<>();
-		// 2.1週間分のLocalDateを格納するList
-		List<LocalDate> week = new ArrayList<>();
-
-		// 3.当月の1日のLocalDateを取得（例：今日が7月なら2024年7月1日）
-		LocalDate now = LocalDate.now().withDayOfMonth(1);
-		// 4.当月1日の曜日を取得（例：2024年7月1日の曜日）
-		DayOfWeek w = now.getDayOfWeek();
-		// 4.週頭のLocalDateを取得（例：d=2024/7/1 なら2024年6月30日)
-		LocalDate day = now.minusDays(w.getValue());
-
-		while (day.isBefore(now.plusMonths(1).withDayOfMonth(1).plusWeeks(1))) {
-            week.add(day); // 5. 1日ずつ増やしてLocalDateを求めていき、Listへ格納する
-            if (day.getDayOfWeek() == DayOfWeek.SATURDAY) {
-                month.add(week); // 1週間分詰めたら1.のリストへ格納する
-                week = new ArrayList<>(); // 新しいListを生成する
-            }
-            day = day.plusDays(1); // 1日ずつ増やす
-        }
-		
-		
-		//カレンダーに年月を表示させるためのフィールド（例:2024年07月）
+	public String main(@RequestParam(value = "date", required = false) String date, Model model, Principal principal) {
+		// 現在の日付を取得
+		LocalDate currentDate = (date != null) ? LocalDate.parse(date) : LocalDate.now();
+		// currentDateから現在の年月を取得
+		YearMonth yearMonth = YearMonth.from(currentDate);
+		// CalendarServiceからカレンダーの情報を取得
+		List<List<LocalDate>> month = cs.createCalendar(yearMonth.getYear(), yearMonth.getMonthValue());
+		// カレンダーに年月を表示させる（例:2024年07月）
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy年MM月");
-		//当月の年月を取得
-		String formattedNow = now.format(formatter);
-		//前月の年月を取得
-		LocalDate prev = now.minusMonths(1);
-		String formattedPrev = prev.format(formatter);
-		//次月の年月を取得
-		LocalDate next = now.plusMonths(1);
-		String formattedNext = next.format(formatter);
+		String formattedMonth = yearMonth.format(formatter);
+
+		// カレンダーの最初と最後の日付を取得
+		LocalDateTime firstDate = month.get(0).get(0).atStartOfDay();
+		LocalDateTime lastDate = month.get(month.size() - 1).get(month.get(month.size() - 1).size() - 1).atTime(23, 59,59);
 		
+		//ログインユーザーのロールを取得
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		boolean isAdmin = authentication.getAuthorities().stream().anyMatch(authority -> authority.getAuthority().equals("ROLE_ADMIN"));
+		
+		//タスクを取得
+		List<Tasks> tasksList ;
+		if (isAdmin) {
+			tasksList = ts.getTasksByAllUser(firstDate, lastDate);
+		}else {
+			tasksList = ts.getTasksByUser(firstDate, lastDate, principal.getName());
+		}
+		MultiValueMap<LocalDate, Tasks> tasksByDate = new LinkedMultiValueMap<>();
+		for(Tasks task : tasksList) {
+			tasksByDate.add(task.getDate().toLocalDate(), task);
+		}
 
 		model.addAttribute("matrix", month);
-		model.addAttribute("month",formattedNow);
-		//model.addAttribute("prev",formattedPrev);
-		//model.addAttribute("next",formattedNext);
-		
+		model.addAttribute("month", formattedMonth);
+		model.addAttribute("prev", currentDate.minusMonths(1));
+		model.addAttribute("next", currentDate.plusMonths(1));
+		model.addAttribute("tasks", tasksByDate);
+
 		return "main";
 	}
 }

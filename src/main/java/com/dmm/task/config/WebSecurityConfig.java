@@ -41,8 +41,10 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
 		// 認可の設定
-		http.exceptionHandling().accessDeniedPage("/accessDeniedPage").and().authorizeRequests()
-				.antMatchers("/loginForm").permitAll() // loginFormは、全ユーザからのアクセスを許可
+		http.exceptionHandling()
+				.accessDeniedPage("/accessDeniedPage") //アクセス拒否時に遷移するパス
+				.and()
+				.authorizeRequests().antMatchers("/loginForm").permitAll() // loginFormは、全ユーザからのアクセスを許可
 				.anyRequest().authenticated(); // loginForm以外は、認証を求める
 		
 		// ログイン設定
