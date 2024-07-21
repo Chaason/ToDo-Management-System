@@ -15,23 +15,27 @@ public class TaskService {
 	@Autowired
 	private TasksRepository taskRepository;
 
+	// 管理者用メソッド。全ユーザーのタスクをDBから取得
 	public List<Tasks> getTasksByAllUser(LocalDateTime from, LocalDateTime to) {
 		return taskRepository.findAllByDateBetween(from, to);
 	}
 
-	
+	// ユーザー用メソッド。ユーザー自身のタスクを取得
 	public List<Tasks> getTasksByUser(LocalDateTime from, LocalDateTime to, String name) {
 		return taskRepository.findByDateBetween(from, to, name);
 	}
 
+	// IDごとにタスクを取得するメソッド
 	public Tasks getTaskById(Integer id) {
 		return taskRepository.findById(id).orElse(null);
 	}
-	
+
+	// タスクの新規登録メソッド
 	public Tasks createTask(Tasks task) {
 		return taskRepository.save(task);
 	}
 
+	// タスクの編集用メソッド
 	public Tasks updateTask(Integer id, Tasks taskDetails) {
 		Tasks task = getTaskById(id);
 		if (task != null) {
@@ -46,6 +50,7 @@ public class TaskService {
 		return task;
 	}
 
+	// タスクの削除用メソッド
 	public void deleteTask(Integer id) {
 		taskRepository.deleteById(id);
 	}

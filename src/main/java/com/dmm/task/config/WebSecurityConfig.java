@@ -31,7 +31,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 		auth.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder());
 		super.configure(auth);
 	}
-	
+
 	@Override
 	public void configure(WebSecurity web) throws Exception {
 		// 画像、JavaScript、cssは認可の対象外とする
@@ -41,12 +41,10 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
 		// 認可の設定
-		http.exceptionHandling()
-				.accessDeniedPage("/accessDeniedPage") //アクセス拒否時に遷移するパス
-				.and()
-				.authorizeRequests().antMatchers("/loginForm").permitAll() // loginFormは、全ユーザからのアクセスを許可
+		http.exceptionHandling().accessDeniedPage("/accessDeniedPage") // アクセス拒否時に遷移するパス
+				.and().authorizeRequests().antMatchers("/loginForm").permitAll() // loginFormは、全ユーザからのアクセスを許可
 				.anyRequest().authenticated(); // loginForm以外は、認証を求める
-		
+
 		// ログイン設定
 		http.formLogin() // フォーム認証の有効化
 				.loginPage("/loginForm") // ログインフォームを表示するパス

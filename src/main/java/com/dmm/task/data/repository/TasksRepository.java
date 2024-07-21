@@ -9,12 +9,13 @@ import org.springframework.data.repository.query.Param;
 
 import com.dmm.task.data.entity.Tasks;
 
-public interface TasksRepository extends JpaRepository<Tasks, Integer>{
-	//一般ユーザー用のタスク取得メソッド
+public interface TasksRepository extends JpaRepository<Tasks, Integer> {
+	// 一般ユーザー用のタスク取得メソッド
 	@Query("select a from Tasks a where a.date between :from and :to and name = :name")
-	List<Tasks> findByDateBetween(@Param("from") LocalDateTime from, @Param("to") LocalDateTime to, @Param("name") String name);
-	
-	//管理者用のタスク取得メソッド
+	List<Tasks> findByDateBetween(@Param("from") LocalDateTime from, @Param("to") LocalDateTime to,
+			@Param("name") String name);
+
+	// 管理者用のタスク取得メソッド
 	@Query("select a from Tasks a where a.date between :from and :to")
 	List<Tasks> findAllByDateBetween(@Param("from") LocalDateTime from, @Param("to") LocalDateTime to);
 }
